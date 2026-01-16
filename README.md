@@ -2,6 +2,7 @@
 B站视频教程：https://www.bilibili.com/video/BV1h142187uT/
 
 2025/3/12更新，新增potoken参数，请将potoken填写到D:/potoken.txt,或者自行修改脚本中potoken位置。potoken获取请见https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide。
+2026/1/16更新，不再需要potoken，只需要安装deno，详情搜索yt-dlp项目
 
 这是一个可以将YouTube视频/频道一键搬运到B站的脚本。具体步骤如下：
 默认使用upload.py,以下教程也基于upload.py如果你是在使用境外VPS时则直接使用noproxy_upload.py而不是upload.py，这样就无需配置proxy，其他步骤相同，只是名字替换成noproxy_upload.py
