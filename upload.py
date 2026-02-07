@@ -55,7 +55,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
             "file": "",
         },
         "cookies_from_browser": {
-            "enabled": True,
+            "enabled": False,
             "browser": "firefox",
             "profile": None,
             "keyring": None,
@@ -63,7 +63,6 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         },
         "js_runtime": {
             "enabled": True,
-            "js_runtimes": ["deno"],
             "remote_components": ["ejs:github"],
         },
         "ydl_opts": {
@@ -201,10 +200,16 @@ class App:
 
     def _load_config(self) -> Dict[str, Any]:
         if not self.config_path.exists():
-            raise FileNotFoundError(
-                f"Config not found: {self.config_path}. "
-                "Create one from config.example.yaml."
-            )
+            example_config = self.base_dir / "config.example.yaml"
+            if example_config.exists():
+                shutil.copy2(example_config, self.config_path)
+                print(f"[startup] 未找到配置，已自动生成: {self.config_path}")
+                print("[startup] 请按提示继续，或手动编辑配置文件后重新运行。")
+            else:
+                raise FileNotFoundError(
+                    f"Config not found: {self.config_path}, "
+                    "and config.example.yaml is also missing."
+                )
         payload = yaml.safe_load(self.config_path.read_text(encoding="utf-8")) or {}
         if not isinstance(payload, dict):
             raise ValueError(f"Config file is not a mapping: {self.config_path}")
@@ -558,10 +563,14 @@ class App:
 
         js_cfg = youtube_cfg.get("js_runtime") or {}
         if js_cfg.get("enabled", True):
-            opts["js_runtimes"] = list(js_cfg.get("js_runtimes") or ["deno"])
-            opts["remote_components"] = list(
-                js_cfg.get("remote_components") or ["ejs:github"]
-            )
+            remote_components = js_cfg.get("remote_components") or []
+            if remote_components:
+                opts["remote_components"] = list(remote_components)
+
+            # js_runtimes 改为可选，未配置时不主动注入。
+            js_runtimes = js_cfg.get("js_runtimes") or []
+            if js_runtimes:
+                opts["js_runtimes"] = list(js_runtimes)
 
         if outtmpl:
             opts["outtmpl"] = outtmpl

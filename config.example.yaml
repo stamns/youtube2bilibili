@@ -1,105 +1,159 @@
+# =========================
+# youtube2bilibili 配置文件
+# =========================
+
 paths:
+  # 视频下载工作目录（每个视频会在此目录下创建子文件夹）
   videos_dir: videos
+  # 批量模式的状态文件（断点续传依赖该文件）
   url_list_file: url_list.json
+  # 播放列表解析结果输出文件（调试/排查用）
   playlist_dump_file: output.json
 
 network:
-  # 统一代理。留空/null 表示直连。
+  # 全局代理（为空则走直连）
   proxy: http://127.0.0.1:10809
+  # 网络请求超时时间（秒）
   timeout_sec: 20
+  # 启动时连通性检测地址（默认检测 YouTube）
   startup_check_url: https://www.youtube.com
 
 startup:
-  # YouTube 连通性失败时，是否允许启动时手动输入代理重试
+  # YouTube 连通性失败时，是否允许终端输入代理重试
   ask_proxy_on_youtube_check_fail: true
   # 启动时是否自动更新 Python 依赖（yt-dlp / deno）
   auto_update_python_deps: true
 
 youtube:
-  # 可选单独代理，留空时继承 network.proxy
+  # YouTube 专用代理（为空时继承 network.proxy）
   proxy:
+  # 解析播放列表时是否启用 extract_flat（更快）
   playlist_extract_flat: true
 
-  # 二选一：cookies 文件 或 浏览器 cookies
   cookies:
+    # 是否启用 cookies 文件
     enabled: false
+    # cookies 文件路径（Netscape 格式）
     file: cookies.txt
 
   cookies_from_browser:
-    enabled: true
+    # 是否启用浏览器 cookies（默认关闭）
+    enabled: false
+    # 浏览器类型（firefox/chrome/edge 等）
     browser: firefox
+    # 浏览器 profile（可空）
     profile:
+    # keyring 参数（可空）
     keyring:
+    # container 参数（可空）
     container:
 
-  # yt-dlp 新版 js 运行时配置（按你的需求默认 deno + ejs:github）
   js_runtime:
+    # 是否启用 yt-dlp JS 运行相关选项
     enabled: true
-    js_runtimes:
-      - deno
+    # 远程组件（你当前需求默认只需要这个）
     remote_components:
       - ejs:github
+    # 可选：仅当你明确需要时再填写 js_runtimes
+    # js_runtimes:
+    #   - deno
 
-  # 直接透传到 yt_dlp.YoutubeDL(ydl_opts)
   ydl_opts:
+    # 是否从直播起点开始下载
     live_from_start: true
+    # 分片并发下载数
     concurrent_fragment_downloads: 3
+    # 分片重试次数
     fragment_retries: 3
+    # 总重试次数
     retries: 3
 
 upload:
+  # 你的 B 站账号标识（可作为标签）
   owner_name: username
+  # 上传成功后是否删除本地视频目录
   remove_file: true
+  # 默认投稿分区 tid
   default_tid: 21
+  # 单个 URL 上传失败后的重试次数
   retry_count: 2
+  # 是否自动把原视频 uploader 加入标签
   include_uploader_in_tags: true
+  # 是否自动把 owner_name 加入标签
   include_owner_in_tags: true
+  # 标题最大长度（字符）
   max_title_chars: 80
+  # 简介最大长度（字符）
   max_desc_chars: 250
+  # 标签最多数量
   max_tags: 10
+  # 单个标签最大长度
   max_tag_chars: 20
+  # 标题模板（可用变量见下）
   title_template: "{title}"
+  # 简介模板（可用变量见下）
   desc_template: "原视频日期{release_date}"
+  # 转载来源模板（可用变量见下）
   source_template: "{url}"
+  # 可用变量：{title} {raw_title} {uploader} {owner_name} {url} {release_date} {video_id}
 
-  # 标题规则（正则）示例，可按需增减
   title_rules:
+    # 标题正则处理后是否 trim
     trim: true
+    # 正则替换规则（按顺序执行）
     regex_replace:
       - pattern: "\\s*\\|\\s*Official\\s*Video$"
         replace: ""
+        # flags 支持 I/M/S
         flags: I
 
 biliupr:
+  # biliupR 对应仓库
   repo: biliup/biliup
+  # biliupR 安装目录
   install_dir: deps/biliupR
+  # biliupR 安装元数据文件名
   metadata_file: installed.json
+  # B 站登录凭据文件（biliup login/renew 使用）
   user_cookie: cookies.json
+  # 上传线路（如 qn / bda2 / AUTO）
   line: qn
+  # 上传并发
   limit: 3
+  # 投稿提交接口（App/Web/BCutAndroid）
   submit: App
-  # 可选单独代理，留空时继承 network.proxy
+  # biliupR 专用代理（为空时继承 network.proxy）
   proxy:
+  # biliupR 网络检查超时（秒）
   check_timeout_sec: 20
+  # biliup renew 登录校验超时（秒）
   login_check_timeout_sec: 30
-  # 启动时检查一次更新
+  # 启动时是否检查 biliupR 更新
   update_check_on_start: true
-  # true=检测到新版本自动更新；false=只提示
+  # 启动时检测到新版本是否自动更新 biliupR
   auto_update: true
 
-# biliupR 可配置投稿默认项（会作为 streamers 里每个视频的默认 studio 字段）
 biliup_studio_defaults:
+  # 版权类型：1 自制 / 2 转载
   copyright: 2
+  # 空间动态文案
   dynamic: ""
+  # 杜比音效：0 关闭 / 1 开启
   dolby: 0
-  # 等价于命令行 --hires
+  # Hi-Res（对应 lossless_music）：0 关闭 / 1 开启
   lossless_music: 0
+  # 充电面板：0 关闭 / 1 开启
   charging_pay: 0
+  # 禁止转载：0 允许 / 1 禁止
   no_reprint: 0
+  # 仅自己可见：null 公开 / 1 仅自己
   is_only_self:
+  # 精选评论（仅部分提交接口有效）
   up_selection_reply: false
+  # 关闭评论（仅部分提交接口有效）
   up_close_reply: false
+  # 关闭弹幕（仅部分提交接口有效）
   up_close_danmu: false
-  # 可选，JSON 对象（biliupR 的 extra_fields）
+  # 可选：额外提交字段（JSON 对象）
   # extra_fields:
   #   topic_id: 0
