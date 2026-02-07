@@ -1,60 +1,113 @@
-# Youtube2Bilibili
-B站视频教程：https://www.bilibili.com/video/BV1h142187uT/
+# youtube2bilibili（依赖升级重置版）
 
-2025/3/12更新，新增potoken参数，请将potoken填写到D:/potoken.txt,或者自行修改脚本中potoken位置。potoken获取请见https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide。
-2026/1/16更新，不再需要potoken，只需要安装deno，详情搜索yt-dlp项目
+本项目因上游依赖变化做了一次重置升级：
 
-这是一个可以将YouTube视频/频道一键搬运到B站的脚本。具体步骤如下：
-默认使用upload.py,以下教程也基于upload.py如果你是在使用境外VPS时则直接使用noproxy_upload.py而不是upload.py，这样就无需配置proxy，其他步骤相同，只是名字替换成noproxy_upload.py
-1. 首先，修改upload.py配置：
-```
-OWNER_NAME = "username" // 你的B站账号名
-REMOVE_FILE = True  //是否删除投稿后的视频文件
-LineN = "qn"  //线路，如cos、bda2、qn、ws、kodo
-DEFAULT_TID = 21
-PROXY = 'http://192.168.99.148:20171' //代理地址
-COOKIES_FROM_BROWSER = ("firefox",) //请在windows系统上安装firefox并登陆youtube。如果是其他平台无法登陆，可以使用cookiefile参数或者空白
-URL_LIST_FILE = "url_list.json" //不用修改
-```
+- 从旧 `biliup-rs` 迁移到 [biliup/biliup](https://github.com/biliup/biliup) Release 的 **`biliupR`**
+- `yt-dlp` 全部改为 Python API（`ydl_opts`）
+- 启动流程改为“先检查再执行”，减少中途失败
 
-2. 在配置完成之后，访问 [这个链接](https://github.com/biliup/biliup-rs) 下载最新的release并解压到根目录（即biliup 可执行文件和 upload.py 在同一个目录下）。然后你需要手动创建一个空文件夹，命名为 "videos"。
+## 主要功能
 
-3. 接下来，执行 `pip install -r requirements.txt` 来安装所有必要的依赖。
+- 一键搬运 YouTube 到 B 站（下载 + 投稿）
+- 外部配置 `config.yaml`（不再写死在代码里）
+- 支持代理、cookies 文件、cookies-from-browser
+- 标题正则清洗、标签裁剪、投稿默认项覆盖
+- 自动下载并更新 `biliupR`（严格匹配 `biliupR-*`，不会误下 `bbup`）
+- 启动时自动检查并更新 `yt-dlp` / `deno` / `biliupR`（可配置）
 
-4. 执行 `./biliup login` 并选择扫码登录。
+## 目录说明
 
-5. 根据你的操作系统，你可能需要修改 `"biliup upload"` 的路径。如果你使用的是 windows 操作系统，那么这一步可以跳过。在其他平台上，你需要将它改为 `./biliup upload`。
+- `D:\youtube2bilibili\upload.py`：主脚本
+- `D:\youtube2bilibili\noproxy_upload.py`：无代理入口（优先读 `config.noproxy.yaml`）
+- `D:\youtube2bilibili\install.py`：安装 Python 依赖 + 初始化 `biliupR`
+- `D:\youtube2bilibili\biliupr_installer.py`：`biliupR` 下载/更新模块
+- `D:\youtube2bilibili\config.example.yaml`：配置模板
 
-6. 最后，运行 `python upload.py`。这个脚本有三种模式，模式1会上传单个视频，模式2会上传播放列表。如果你使用的链接是像 `https://www.youtube.com/@user/streams` 这种格式的，它将会被看作一个播放列表，脚本将会搬运所有的直播。模式3是断点续传，在模式2生成的 url_list.json 文件存在的情况下，脚本将会继续上传状态为 "no" 的视频。
+## 安装流程（PowerShell 7）
 
-以上步骤完成后，就可以实现YouTube视频到Bilibili的自动搬运了。
+1. 复制配置模板
 
-如果有任何疑问，请参阅README文件。
----
-# Youtube2Bilibili
-This is a script that can transfer videos/channels from YouTube to Bilibili with a single click. Here are the steps:
-The following tutorial is based on using upload.py by default. If you are using an oversea VPS server, you should use noproxy_upload.py instead of upload.py, so that you do not need to configure a proxy. Other steps are the same, except that the name is replaced with noproxy_upload.py.
-1. First, modify the configuration file: 
-```python
-OWNER_NAME = "username" // Your Bilibili account name
-REMOVE_FILE = True  // Whether to delete the video file after contribution
-LineN = "qn"  // Line, such as cos, bda2, qn, ws, kodo
-DEFAULT_TID = 21
-PROXY = 'http://192.168.99.148:20171' // The proxy address
-COOKIES_FROM_BROWSER = ("firefox",)
-URL_LIST_FILE = "url_list.json" //do not change
+```powershell
+Copy-Item .\config.example.yaml .\config.yaml
 ```
 
-2. After the configuration is complete, visit [this link](https://github.com/biliup/biliup-rs) to download the latest release and extract it to the root directory (i.e., the biliup executable file and upload.py are in the same directory). You need to manually create a blank folder named "videos".
+2. 安装依赖并下载 `biliupR`
 
-3. Next, run `pip install -r requirements.txt` to install all the necessary dependencies.
+```powershell
+python .\install.py --config .\config.yaml
+```
 
-4. Execute `./biliup login` and choose to log in by scanning the QR code.
+3. 启动脚本
 
-5. Depending on your operating system, you may need to modify the path of "biliup upload". If you are using the Windows operating system, you can skip this step. On other platforms, you need to change it to `./biliup upload`.
+```powershell
+python .\upload.py --config .\config.yaml
+```
 
-6. Finally, run `python upload.py`. There are three modes for this script. Mode 1 will upload a single video, Mode 2 will upload a playlist. If you use a link like `https://www.youtube.com/@user/streams`, it will be regarded as a playlist and the script will transfer all live streams. Mode 3 is breakpoint resumption. If the url_list.json file generated in Mode 2 exists, the script will continue to upload videos with the "no" status.
+## 启动顺序（已固定）
 
-After completing the above steps, you can automatically transfer videos from YouTube to Bilibili.
+脚本每次启动都会按以下顺序执行：
 
-If you have any questions, please refer to the README file.
+1. 验证 YouTube 连通性  
+   - 优先使用配置代理  
+   - 失败时可在终端直接输入代理地址（例如 `http://127.0.0.1:7890`）重试  
+   - 代理验证通过后会自动回写到 `config.yaml`  
+   - 仍失败则停止
+2. 验证 B 站登录状态  
+   - 使用 `biliup renew` 校验  
+   - 未登录时自动调用 `biliup login`（方向键选择登录方式，可扫码）  
+   - 登录成功后再次 `renew` 验证
+3. 检查并更新依赖  
+   - `yt-dlp` / `deno`（PyPI）  
+   - `biliupR`（GitHub Release）
+4. 进入四种运行模式
+
+## 四种模式
+
+1. 单视频上传  
+输入一个 YouTube URL，立即下载并投稿。
+
+2. 列表/频道模式  
+输入播放列表或频道 URL，自动解析链接并批量上传；状态写入 `url_list.json`。
+
+3. 断点续传模式  
+读取 `url_list.json` 中状态为 `no` 的条目继续上传。
+
+4. 手动多链接模式  
+逐条输入 URL，输入“完毕”结束，随后批量上传。
+
+补充：批量模式结束后会输出本轮成功/失败统计和失败 URL 列表。
+
+## 配置重点
+
+请直接编辑 `D:\youtube2bilibili\config.yaml`。
+
+- 代理  
+  - `network.proxy`
+  - `youtube.proxy` / `biliupr.proxy`（可覆盖全局）
+- 启动控制  
+  - `startup.ask_proxy_on_youtube_check_fail`
+  - `startup.auto_update_python_deps`
+- YouTube 鉴权  
+  - `youtube.cookies.enabled + youtube.cookies.file`
+  - `youtube.cookies_from_browser.enabled + browser/profile/...`
+- yt-dlp 新版 JS 配置  
+  - `youtube.js_runtime.js_runtimes: ["deno"]`
+  - `youtube.js_runtime.remote_components: ["ejs:github"]`
+- 投稿默认项（映射到 biliupR studio）  
+  - `biliup_studio_defaults`
+- 标题正则规则  
+  - `upload.title_rules.regex_replace`
+
+## 常用命令
+
+- 仅更新 `biliupR`（跳过 pip）
+
+```powershell
+python .\install.py --config .\config.yaml --skip-pip
+```
+
+- 强制重装最新版 `biliupR`
+
+```powershell
+python .\install.py --config .\config.yaml --force-biliupr
+```

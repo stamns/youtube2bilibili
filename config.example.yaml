@@ -1,0 +1,105 @@
+paths:
+  videos_dir: videos
+  url_list_file: url_list.json
+  playlist_dump_file: output.json
+
+network:
+  # 统一代理。留空/null 表示直连。
+  proxy: http://127.0.0.1:10809
+  timeout_sec: 20
+  startup_check_url: https://www.youtube.com
+
+startup:
+  # YouTube 连通性失败时，是否允许启动时手动输入代理重试
+  ask_proxy_on_youtube_check_fail: true
+  # 启动时是否自动更新 Python 依赖（yt-dlp / deno）
+  auto_update_python_deps: true
+
+youtube:
+  # 可选单独代理，留空时继承 network.proxy
+  proxy:
+  playlist_extract_flat: true
+
+  # 二选一：cookies 文件 或 浏览器 cookies
+  cookies:
+    enabled: false
+    file: cookies.txt
+
+  cookies_from_browser:
+    enabled: true
+    browser: firefox
+    profile:
+    keyring:
+    container:
+
+  # yt-dlp 新版 js 运行时配置（按你的需求默认 deno + ejs:github）
+  js_runtime:
+    enabled: true
+    js_runtimes:
+      - deno
+    remote_components:
+      - ejs:github
+
+  # 直接透传到 yt_dlp.YoutubeDL(ydl_opts)
+  ydl_opts:
+    live_from_start: true
+    concurrent_fragment_downloads: 3
+    fragment_retries: 3
+    retries: 3
+
+upload:
+  owner_name: username
+  remove_file: true
+  default_tid: 21
+  retry_count: 2
+  include_uploader_in_tags: true
+  include_owner_in_tags: true
+  max_title_chars: 80
+  max_desc_chars: 250
+  max_tags: 10
+  max_tag_chars: 20
+  title_template: "{title}"
+  desc_template: "原视频日期{release_date}"
+  source_template: "{url}"
+
+  # 标题规则（正则）示例，可按需增减
+  title_rules:
+    trim: true
+    regex_replace:
+      - pattern: "\\s*\\|\\s*Official\\s*Video$"
+        replace: ""
+        flags: I
+
+biliupr:
+  repo: biliup/biliup
+  install_dir: deps/biliupR
+  metadata_file: installed.json
+  user_cookie: cookies.json
+  line: qn
+  limit: 3
+  submit: App
+  # 可选单独代理，留空时继承 network.proxy
+  proxy:
+  check_timeout_sec: 20
+  login_check_timeout_sec: 30
+  # 启动时检查一次更新
+  update_check_on_start: true
+  # true=检测到新版本自动更新；false=只提示
+  auto_update: true
+
+# biliupR 可配置投稿默认项（会作为 streamers 里每个视频的默认 studio 字段）
+biliup_studio_defaults:
+  copyright: 2
+  dynamic: ""
+  dolby: 0
+  # 等价于命令行 --hires
+  lossless_music: 0
+  charging_pay: 0
+  no_reprint: 0
+  is_only_self:
+  up_selection_reply: false
+  up_close_reply: false
+  up_close_danmu: false
+  # 可选，JSON 对象（biliupR 的 extra_fields）
+  # extra_fields:
+  #   topic_id: 0
