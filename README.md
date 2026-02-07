@@ -33,6 +33,7 @@ python upload.py --config config.yaml
 2. 验证 B 站登录状态  
    - 使用 `biliup renew` 校验  
    - 未登录自动执行 `biliup login`（可扫码）
+   - 所有 `biliup` 命令不传 `-p` 代理参数
 3. 检查并更新依赖  
    - `yt-dlp` / `deno`（PyPI）  
    - `biliupR`（GitHub Release）
@@ -61,7 +62,7 @@ python upload.py --config config.yaml
 
 常用配置项：
 
-- 代理：`network.proxy`、`youtube.proxy`、`biliupr.proxy`
+- 代理：`network.proxy`、`youtube.proxy`
 - 启动行为：`startup.ask_proxy_on_youtube_check_fail`、`startup.auto_update_python_deps`
 - YouTube 鉴权：
   - `youtube.cookies.enabled + youtube.cookies.file`

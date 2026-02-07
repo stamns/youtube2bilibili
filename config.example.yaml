@@ -12,7 +12,7 @@ paths:
 
 network:
   # 全局代理（为空则走直连）
-  proxy: http://127.0.0.1:10809
+  proxy:
   # 网络请求超时时间（秒）
   timeout_sec: 20
   # 启动时连通性检测地址（默认检测 YouTube）
@@ -122,8 +122,6 @@ biliupr:
   limit: 3
   # 投稿提交接口（App/Web/BCutAndroid）
   submit: App
-  # biliupR 专用代理（为空时继承 network.proxy）
-  proxy:
   # biliupR 网络检查超时（秒）
   check_timeout_sec: 20
   # biliup renew 登录校验超时（秒）

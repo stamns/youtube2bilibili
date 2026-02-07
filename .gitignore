@@ -1,0 +1,30 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local runtime/config files
+config.yaml
+config.local.yaml
+url_list.json
+output.json
+qrcode.png
+
+# Credentials and secrets
+cookies.json
+*.cookies.json
+cookie*.txt
+*.token
+*.session
+
+# Downloaded binaries and media
+deps/
+videos/
+
+# Logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db

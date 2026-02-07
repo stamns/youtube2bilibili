@@ -99,7 +99,6 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "line": "qn",
         "limit": 3,
         "submit": "App",
-        "proxy": None,
         "check_timeout_sec": 20,
         "update_check_on_start": True,
         "auto_update": True,
@@ -235,7 +234,6 @@ class App:
     def set_runtime_proxy(self, proxy: str, *, persist: bool = False) -> None:
         self.config.setdefault("network", {})["proxy"] = proxy
         self.config.setdefault("youtube", {})["proxy"] = proxy
-        self.config.setdefault("biliupr", {})["proxy"] = proxy
         if persist:
             self.persist_config()
             print(f"[startup] 代理已写回配置文件: {self.config_path}")
@@ -294,7 +292,7 @@ class App:
         repo = cfg.get("repo", "biliup/biliup")
         metadata_file = cfg.get("metadata_file", "installed.json")
         timeout = safe_int(cfg.get("check_timeout_sec"), 20)
-        proxy = self.get_proxy("biliupr")
+        proxy = self.get_proxy("network")
 
         try:
             ensure_result = ensure_biliupr_installed(
@@ -327,9 +325,6 @@ class App:
             raise RuntimeError("biliupR binary path not ready")
         cfg = self.config.get("biliupr") or {}
         cmd = [str(self.biliup_binary)]
-        proxy = self.get_proxy("biliupr")
-        if proxy:
-            cmd += ["-p", proxy]
         if include_user_cookie:
             cmd += ["-u", str(resolve_path(self.base_dir, cfg.get("user_cookie", "cookies.json")))]
         return cmd
@@ -470,7 +465,7 @@ class App:
         do_check_update = bool(cfg.get("update_check_on_start", True))
         auto_update = bool(cfg.get("auto_update", True))
         timeout = safe_int(cfg.get("check_timeout_sec"), 20)
-        proxy = self.get_proxy("biliupr")
+        proxy = self.get_proxy("network")
 
         if not do_check_update:
             print("[startup] 已跳过 biliupR 更新检查（配置关闭）")
@@ -794,9 +789,6 @@ class App:
             temp_config = Path(fp.name)
 
         cmd = [str(self.biliup_binary)]
-        proxy = self.get_proxy("biliupr")
-        if proxy:
-            cmd += ["-p", proxy]
         cmd += ["-u", str(user_cookie), "upload", "--config", str(temp_config)]
 
         print(f"[upload] Running: {' '.join(cmd)}")
